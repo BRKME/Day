@@ -27,29 +27,33 @@ jobs:
         pip install aiohttp
         echo "✅ Dependencies installed"
         
-    - name: Debug info
+    - name: List files for debugging
       run: |
-        echo "🕐 Current UTC time: $(date -u)"
         echo "📁 Current directory: $(pwd)"
-        echo "📄 Files in directory: $(ls -la)"
+        echo "📄 Files in root:"
+        ls -la
+        echo "📄 Files in current dir:"
+        find . -name "*.py" -type f
         
     - name: Test basic Python
       run: |
+        echo "🧪 Testing Python..."
+        python --version
         python test_simple.py
         
     - name: Run Personal Schedule
-      id: schedule
-      continue-on-error: true
       run: |
+        echo "🚀 Running main script..."
         python personal_schedule.py
+      continue-on-error: false
         
     - name: Success notification
-      if: steps.schedule.outcome == 'success'
+      if: success()
       run: |
         echo "✅ Personal schedule reminder sent successfully"
         
     - name: Failure notification
-      if: steps.schedule.outcome == 'failure'
+      if: failure()
       run: |
         echo "❌ Failed to send personal schedule reminder"
         echo "Check the logs above for details"
