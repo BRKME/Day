@@ -35,8 +35,25 @@ jobs:
         python -m pip install --upgrade pip
         pip install aiohttp
         
-    - name: Send notification
-      env:
-        TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+    - name: Determine period for scheduled runs
+      id: period
       run: |
-        python notifier.py ${{ github.event.inputs.period || 'morning' }}
+        if [[ "${{ github.event_name }}" == "schedule" ]]; then
+          # Определяем период по времени запуска
+          HOUR=$(date -u +%H)
+          if [[ "$HOUR" == "04" ]]; then
+            echo "period=morning" >> $GITHUB_OUTPUT
+          elif [[ "$HOUR" == "09" ]]; then
+            echo "period=day" >> $GITHUB_OUTPUT
+          elif [[ "$HOUR" == "16" ]]; then
+            echo "period=evening" >> $GITHUB_OUTPUT
+          else
+            echo "period=morning" >> $GITHUB_OUTPUT
+          fi
+        else
+          echo "period=${{ github.event.inputs.period || 'morning' }}" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Send notification
+      run: |
+        python notifier.py ${{ steps.period.outputs.period }}
