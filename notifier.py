@@ -340,12 +340,13 @@ class PersonalScheduleNotifier:
     async def send_message_for_period(self, period: str):
         """Отправляет сообщение для указанного периода"""
         date_str, day_of_week, schedule = self.get_today_schedule()
+        ss_content = None
         
         if period == 'morning':
             message = self.format_morning_message(date_str, day_of_week, schedule)
-            # Добавляем кнопку только для воскресенья утром
-            has_button = (day_of_week == 'sunday')
-            return await self.send_telegram_message(message, has_family_council=has_button)
+            # Загружаем SS.txt только для воскресенья утром
+            if day_of_week == 'sunday':
+                ss_content = await self.fetch_family_council_content()
         elif period == 'day':
             message = self.format_day_message(date_str, day_of_week, schedule)
         elif period == 'evening':
@@ -354,7 +355,7 @@ class PersonalScheduleNotifier:
             logger.error(f"❌ Неизвестный период: {period}")
             return False
             
-        return await self.send_telegram_message(message)
+        return await self.send_telegram_message(message, ss_content)
 
 async def main(period: str):
     """Основная функция"""
