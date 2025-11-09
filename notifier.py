@@ -185,8 +185,8 @@ class PersonalScheduleNotifier:
         
         return task_count
 
-    def format_morning_message(self, date_str: str, day_of_week: str, schedule: dict):
-        """Форматирует утреннее сообщение"""
+    def format_morning_day_message(self, date_str: str, day_of_week: str, schedule: dict):
+        """Форматирует объединённое сообщение утро+день"""
         day_names = {
             'monday': 'Понедельник', 'tuesday': 'Вторник', 'wednesday': 'Среда',
             'thursday': 'Четверг', 'friday': 'Пятница', 'saturday': 'Суббота', 
@@ -195,52 +195,37 @@ class PersonalScheduleNotifier:
         
         day_ru = day_names.get(day_of_week, day_of_week)
         wisdom = self.get_random_wisdom()
-        task_count = self.count_tasks(schedule, 'morning')
-        target_score = max(0, task_count - 1)
         
-        message = f"🌅 <b>Доброе утро! План на {date_str}</b>\n"
+        message = f"🌅 <b>План на {date_str}</b>\n"
         message += f"🗓️ <b>{day_ru}</b>\n\n"
         
+        # Утренние задачи
         if schedule.get('утро'):
-            message += "<b>Утренние задачи:</b>\n"
+            message += "<b>☀️ Утренние задачи:</b>\n"
             for task in schedule['утро']:
                 message += f"• {task}\n"
         
-        message += f"\n🎯 <b>Герой, твоя миссия набрать утром {target_score} баллов - тогда день будет SUPER удачным!</b>\n\n"
-        message += f"💫 <b>Хорошего дня! Ты можешь всё!</b>\n\n"
-        message += f"💡 <i>Мудрость дня:</i>\n<b>\"{wisdom}\"</b>"
-        
-        return message
-
-    def format_day_message(self, date_str: str, day_of_week: str, schedule: dict):
-        """Форматирует дневное сообщение"""
-        day_names = {
-            'monday': 'Понедельник', 'tuesday': 'Вторник', 'wednesday': 'Среда',
-            'thursday': 'Четверг', 'friday': 'Пятница', 'saturday': 'Суббота', 
-            'sunday': 'Воскресенье'
-        }
-        
-        day_ru = day_names.get(day_of_week, day_of_week)
-        wisdom = self.get_random_wisdom()
-        task_count = self.count_tasks(schedule, 'day')
-        target_score = max(0, task_count - 1)
-        
-        message = f"☀️ <b>День в разгаре! План на {date_str}</b>\n"
-        message += f"🗓️ <b>{day_ru}</b>\n\n"
-        
+        # Дневные задачи
         if schedule.get('день'):
-            message += "<b>Дневные задачи:</b>\n"
+            message += "\n<b>🌤️ Дневные задачи:</b>\n"
             for task in schedule['день']:
                 message += f"• {task}\n"
         
+        # Нельзя делать
         if schedule.get('нельзя_день'):
-            message += "\n<b>Нельзя делать:</b>\n"
+            message += "\n<b>⛔ Нельзя делать:</b>\n"
             for prohibition in schedule['нельзя_день']:
                 message += f"• {prohibition}\n"
         
-        message += f"\n🎯 <b>Герой, твоя миссия набрать днем {target_score} баллов - тогда день будет SUPER удачным!</b>\n\n"
-        message += f"💪 <b>Продолжаем в том же духе!</b>\n\n"
+        # Подсчет баллов
+        morning_count = len(schedule.get('утро', [])) - 1
+        day_count = len(schedule.get('день', [])) + len(schedule.get('нельзя_день', [])) - 1
+        total_target = max(0, morning_count + day_count)
+        
+        message += f"\n🎯 <b>Твоя миссия набрать {total_target} баллов - и день будет SUPER удачным!</b>\n\n"
+        message += f"💪 <b>Ты можешь всё! Давай!</b>\n\n"
         message += f"💡 <i>Мудрость дня:</i>\n<b>\"{wisdom}\"</b>"
+        
         return message
 
     def format_evening_message(self, date_str: str, day_of_week: str, schedule: dict):
@@ -342,12 +327,12 @@ class PersonalScheduleNotifier:
         ss_content = None
         
         if period == 'morning':
-            message = self.format_morning_message(date_str, day_of_week, schedule)
+            message = self.format_morning_day_message(date_str, day_of_week, schedule)
             # Загружаем SS.txt только для воскресенья утром
             if day_of_week == 'sunday':
                 ss_content = await self.fetch_family_council_content()
         elif period == 'day':
-            message = self.format_day_message(date_str, day_of_week, schedule)
+            message = self.format_morning_day_message(date_str, day_of_week, schedule)
         elif period == 'evening':
             message = self.format_evening_message(date_str, day_of_week, schedule)
         else:
