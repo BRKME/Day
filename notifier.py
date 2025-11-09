@@ -287,11 +287,11 @@ class PersonalScheduleNotifier:
             return None
 
     async def send_telegram_message(self, message: str, ss_content: str = None):
-        """Отправляет сообщение в Telegram, опционально с содержимым SS.txt"""
+        """Отправляет сообщение в Telegram с содержимым SS.txt"""
         try:
-            # Отправляем основное сообщение
             url = f"https://api.telegram.org/bot{self.telegram_token}/sendMessage"
             
+            # Отправляем основное сообщение
             payload = {
                 'chat_id': self.chat_id,
                 'text': message,
@@ -307,33 +307,14 @@ class PersonalScheduleNotifier:
                         logger.error(f"❌ Ошибка Telegram API: {response_text}")
                         return False
             
-            # Если есть содержимое SS.txt, отправляем его отдельным сообщением с кнопкой
+            # Если есть содержимое SS.txt, отправляем его отдельным сообщением
             if ss_content:
-                # Ограничиваем длину для первого сообщения (превью)
-                preview = ss_content[:200] + "..." if len(ss_content) > 200 else ss_content
-                
-                family_council_msg = f"<b>📋 Семейный совет:</b>\n\n<pre>{preview}</pre>"
-                
-                keyboard = {
-                    'inline_keyboard': [
-                        [
-                            {
-                                'text': '➕ Читать полностью',
-                                'callback_data': 'show_council'
-                            },
-                            {
-                                'text': '➖ Скрыть',
-                                'callback_data': 'hide_council'
-                            }
-                        ]
-                    ]
-                }
+                family_council_msg = f"<b>📋 Семейный совет:</b>\n\n<pre>{ss_content}</pre>"
                 
                 payload_council = {
                     'chat_id': self.chat_id,
                     'text': family_council_msg,
-                    'parse_mode': 'HTML',
-                    'reply_markup': keyboard
+                    'parse_mode': 'HTML'
                 }
                 
                 logger.info("📤 Отправка сообщения со Семейным советом...")
