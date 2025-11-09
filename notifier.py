@@ -10,6 +10,7 @@ import logging
 import random
 import sys
 import json
+from urllib.parse import urlparse
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -282,7 +283,22 @@ class PersonalScheduleNotifier:
         message += f"💡 <i>Мудрость дня:</i>\n<b>\"{wisdom}\"</b>"
         return message
 
-    async def send_telegram_message(self, message: str, has_family_council: bool = False):
+    async def fetch_family_council_content(self):
+        """Загружает содержимое файла SS.txt с GitHub"""
+        try:
+            url = "https://raw.githubusercontent.com/BRKME/Day/main/SS.txt"
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, timeout=10) as response:
+                    if response.status == 200:
+                        content = await response.text()
+                        logger.info("✅ Файл SS.txt загружен успешно")
+                        return content
+                    else:
+                        logger.error(f"❌ Ошибка загрузки файла: статус {response.status}")
+                        return None
+        except Exception as e:
+            logger.error(f"❌ Ошибка при загрузке SS.txt: {e}")
+            return None
         """Отправляет сообщение в Telegram с опциональной кнопкой"""
         try:
             url = f"https://api.telegram.org/bot{self.telegram_token}/sendMessage"
