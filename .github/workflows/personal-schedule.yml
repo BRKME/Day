@@ -1,9 +1,7 @@
 name: Daily Schedule Notifier
-
 on:
   schedule:
     - cron: '30 4 * * *'   # 07:30 MSK - morning
-    - cron: '30 9 * * *'   # 12:30 MSK - day  
     - cron: '0 16 * * *'   # 19:00 MSK - evening
   workflow_dispatch:
     inputs:
@@ -14,9 +12,7 @@ on:
         type: choice
         options:
         - morning
-        - day
         - evening
-
 jobs:
   send-notification:
     runs-on: ubuntu-latest
@@ -43,8 +39,6 @@ jobs:
           HOUR=$(date -u +%H)
           if [[ "$HOUR" == "04" ]]; then
             echo "period=morning" >> $GITHUB_OUTPUT
-          elif [[ "$HOUR" == "09" ]]; then
-            echo "period=day" >> $GITHUB_OUTPUT
           elif [[ "$HOUR" == "16" ]]; then
             echo "period=evening" >> $GITHUB_OUTPUT
           else
