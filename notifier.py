@@ -19,7 +19,24 @@ def get_first_day_of_month(self, year, month, day_of_week):
                     return week[day_of_week]
         return None
 
-    def get_event_date_by_rule(self, rule, year, month):    def get_random_wisdom(self):
+    def get_event_date_by_rule(self, rule, year, month):
+        """Возвращает дату события по правилу"""
+        if rule == 'last_saturday':
+            day = self.get_last_day_of_month(year, month, 5)
+            return (year, month, day)
+        elif rule == 'last_sunday':
+            day = self.get_last_day_of_month(year, month, 6)
+            return (year, month, day)
+        elif rule == 'first_friday':
+            day = self.get_first_day_of_month(year, month, 4)
+            return (year, month, day)
+        elif rule == 'second_saturday':
+            day = self.get_nth_day_of_month(year, month, 5, 2)
+            return (year, month, day)
+        elif rule == 'third_saturday':
+            day = self.get_nth_day_of_month(year, month, 5, 3)
+            return (year, month, day)
+        return None    def get_random_wisdom(self):
         return random.choice(self.wisdoms)
 
     def get_last_day_of_month(self, year, month, day_of_week):
@@ -260,7 +277,7 @@ class PersonalScheduleNotifier:
                 'утро': ['⚖️ Взвеситься на весах', '💪 Сделать Зарядку', '💊 Прими Витамины', '💝 Комплимент Марте и Саше', '📺 Посмотреть Амо блог на youtube', '🎓 English на Youtube 20 min', '🚀 Ничего не бойся и не сдавайся! - Девиз этого утра'],
                 'день': ['📚 Читать 25 минут', '🌸 Полить Цветы', '🎯 Проверить Цели', '📊 LP %', '💪 Подтянуться min 10 раз', '💪 Упражнение на пресс 2 подхода min 15 раз', '🤐 Молчание золото. Не перебивай'],
                 'нельзя_день': ['❌ Ругаться матом', '❌ Д'],
-                'вечер': ['📖 Читать с Мартой', '📔 Заполни Эмоциональный дневник', '💻 Работать 2 часа над Pet Project', '🧠 25 минут "Встреча с Грок психологом"', '🇬🇧 Марта English c папой', '🍽️ Аркаша моет посуду', '💊 Прими Магний перед сном', '👨‍👩‍👧 Семейная традиция - вечерняя благодарность (развитие эмпатии. учимся замечать не только свои собственные усилия, но и то, что для них делают другие)', '🎬 Семейные традиции - Семейный просмотр фильма с обсуждением']
+                'вечер': ['📖 Читать с Мартой', '📔 Заполни Эмоциональный дневник (будешь управлять эмоциями а не подчиняться им)', '💻 Работать 2 часа над Pet Project', '🧠 25 минут "Встреча с Грок психологом"', '🇬🇧 Марта English c папой', '🍽️ Аркаша моет посуду', '💊 Прими Магний перед сном', '👨‍👩‍👧 Семейная традиция - вечерняя благодарность (развитие эмпатии. учимся замечать не только свои собственные усилия, но и то, что для них делают другие)', '🎬 Семейные традиции - Семейный просмотр фильма с обсуждением']
             },
             'sunday': {
                 'утро': ['💝 Комплимент Марте и Саше', '🎓 English на Youtube 20 min', '📵 Семейные традиции - у тебя День без гаджетов', '👨‍👩‍👧 Семейные традиции'],
