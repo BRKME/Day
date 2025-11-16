@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Personal Daily Schedule Notifier - Fixed Version with Full Wisdoms and Family Council
+Personal Daily Schedule Notifier - Updated with Spoilers and Family Tasks
 """
 
 import asyncio
@@ -10,24 +10,20 @@ import logging
 import random
 import sys
 
-# Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 class PersonalScheduleNotifier:
     def __init__(self):
-        # Telegram settings
         self.telegram_token = "8442392037:AAEiM_b4QfdFLqbmmc1PXNvA99yxmFVLEp8"
         self.chat_id = "350766421"
 
-        # Schedule times
         self.schedule_times = {
             'morning': '07:30',
             'day': '12:30', 
             'evening': '19:00'
         }
 
-        # Полный список мудростей
         self.wisdoms = [
             "Каждый новый день — это новая возможность. Используй её по максимуму.",
             "Ты либо раб своих страхов, либо раб своей дисциплины. Выбор за тобой.",
@@ -101,7 +97,6 @@ class PersonalScheduleNotifier:
             "Любовь, время и благодарность — вот что имеет значение в конце."
         ]
 
-        # Полное расписание
         self.schedule = {
             'monday': {
                 'утро': ['⚖️ Весы', '💪 Зарядка', '💊 Прими Витамины', '💝 Комплимент Марте и Саше', '📺 Посмотреть Амо блог на youtube', '🎓 English на Youtube 20 min', '🚀 Ничего не бойся и не сдавайся! - Девиз этого утра', '🧠 Афформация 5 минут'],
@@ -148,45 +143,21 @@ class PersonalScheduleNotifier:
         }
 
     def get_random_wisdom(self):
-        """Возвращает случайную мудрость"""
         return random.choice(self.wisdoms)
 
     def get_today_schedule(self):
-        """Получает расписание на сегодня"""
         try:
             today = datetime.now()
             date_str = today.strftime("%d.%m.%Y")
             day_of_week = today.strftime("%A").lower()
-            
             logger.info(f"📅 Сегодня: {date_str}, {day_of_week}")
             today_schedule = self.schedule.get(day_of_week, {})
-            
             return date_str, day_of_week, today_schedule
-            
         except Exception as e:
             logger.error(f"❌ Ошибка получения расписания: {e}")
             return "01.01.2024", "monday", {}
 
-    def count_tasks(self, schedule: dict, period: str):
-        """Подсчитывает количество задач для указанного периода"""
-        task_count = 0
-        
-        if period == 'morning':
-            if schedule.get('утро'):
-                task_count = len(schedule['утро'])
-        elif period == 'day':
-            if schedule.get('день'):
-                task_count = len(schedule['день'])
-            if schedule.get('нельзя_день'):
-                task_count += len(schedule['нельзя_день'])
-        elif period == 'evening':
-            if schedule.get('вечер'):
-                task_count = len(schedule['вечер'])
-        
-        return task_count
-
     def format_morning_day_message(self, date_str: str, day_of_week: str, schedule: dict):
-        """Форматирует объединённое сообщение утро+день в формате spoiler"""
         day_names = {
             'monday': 'Понедельник', 'tuesday': 'Вторник', 'wednesday': 'Среда',
             'thursday': 'Четверг', 'friday': 'Пятница', 'saturday': 'Суббота', 
@@ -196,43 +167,35 @@ class PersonalScheduleNotifier:
         day_ru = day_names.get(day_of_week, day_of_week)
         wisdom = self.get_random_wisdom()
         
-        main_content = f"🌅 <b>План на {date_str}</b>\n"
-        main_content += f"🗓️ <b>{day_ru}</b>\n\n"
+        content = f"🌅 <b>План на {date_str}</b>\n"
+        content += f"🗓️ <b>{day_ru}</b>\n\n"
         
-        # Утренние задачи
         if schedule.get('утро'):
-            main_content += "<b>☀️ Утренние задачи:</b>\n"
+            content += "<b>☀️ Утренние задачи:</b>\n"
             for task in schedule['утро']:
-                main_content += f"• {task}\n"
+                content += f"• {task}\n"
         
-        # Дневные задачи
         if schedule.get('день'):
-            main_content += "\n<b>🌤️ Дневные задачи:</b>\n"
+            content += "\n<b>🌤️ Дневные задачи:</b>\n"
             for task in schedule['день']:
-                main_content += f"• {task}\n"
+                content += f"• {task}\n"
         
-        # Нельзя делать
         if schedule.get('нельзя_день'):
-            main_content += "\n<b>⛔ Нельзя делать:</b>\n"
-            for prohibition in schedule['нельзя_день']:
-                main_content += f"• {prohibition}\n"
+            content += "\n<b>⛔ Нельзя делать:</b>\n"
+            for task in schedule['нельзя_день']:
+                content += f"• {task}\n"
         
-        # Подсчет баллов
         morning_count = len(schedule.get('утро', [])) - 1
         day_count = len(schedule.get('день', [])) + len(schedule.get('нельзя_день', [])) - 1
         total_target = max(0, morning_count + day_count)
         
-        main_content += f"\n🎯 <b>Твоя миссия набрать {total_target} баллов - и день будет SUPER удачным!</b>\n\n"
-        main_content += f"💪 <b>Ты можешь всё! Давай!</b>\n\n"
-        main_content += f"💡 <i>Мудрость дня:</i>\n<b>\"{wisdom}\"</b>"
+        content += f"\n🎯 <b>Твоя миссия набрать {total_target} баллов - и день будет SUPER удачным!</b>\n\n"
+        content += f"💪 <b>Ты можешь всё! Давай!</b>\n\n"
+        content += f"💡 <i>Мудрость дня:</i>\n<b>\"{wisdom}\"</b>"
         
-        # Оборачиваем в spoiler
-        message = f"||{main_content}||"
-        
-        return message
+        return f"||{content}||"
 
     def format_evening_message(self, date_str: str, day_of_week: str, schedule: dict):
-        """Форматирует вечернее сообщение в формате spoiler"""
         day_names = {
             'monday': 'Понедельник', 'tuesday': 'Вторник', 'wednesday': 'Среда',
             'thursday': 'Четверг', 'friday': 'Пятница', 'saturday': 'Суббота', 
@@ -241,28 +204,24 @@ class PersonalScheduleNotifier:
         
         day_ru = day_names.get(day_of_week, day_of_week)
         wisdom = self.get_random_wisdom()
-        task_count = self.count_tasks(schedule, 'evening')
+        task_count = len(schedule.get('вечер', []))
         target_score = max(0, task_count - 1)
         
-        main_content = f"🌙 <b>Вечерний план на {date_str}</b>\n"
-        main_content += f"🗓️ <b>{day_ru}</b>\n\n"
+        content = f"🌙 <b>Вечерний план на {date_str}</b>\n"
+        content += f"🗓️ <b>{day_ru}</b>\n\n"
         
         if schedule.get('вечер'):
-            main_content += "<b>Вечерние задачи:</b>\n"
+            content += "<b>Вечерние задачи:</b>\n"
             for task in schedule['вечер']:
-                main_content += f"• {task}\n"
+                content += f"• {task}\n"
         
-        main_content += f"\n🎯 <b>Герой, твоя миссия набрать вечером {target_score} баллов - тогда день будет SUPER удачным!</b>\n\n"
-        main_content += f"🌜 <b>Отличный день! Завершай дела и отдыхай!</b>\n\n"
-        main_content += f"💡 <i>Мудрость дня:</i>\n<b>\"{wisdom}\"</b>"
+        content += f"\n🎯 <b>Герой, твоя миссия набрать вечером {target_score} баллов - тогда день будет SUPER удачным!</b>\n\n"
+        content += f"🌜 <b>Отличный день! Завершай дела и отдыхай!</b>\n\n"
+        content += f"💡 <i>Мудрость дня:</i>\n<b>\"{wisdom}\"</b>"
         
-        # Оборачиваем в spoiler
-        message = f"||{main_content}||"
-        
-        return message
+        return f"||{content}||"
 
     async def fetch_family_council_content(self):
-        """Загружает содержимое файла SS.txt с GitHub"""
         try:
             url = "https://raw.githubusercontent.com/BRKME/Day/main/SS.txt"
             async with aiohttp.ClientSession() as session:
@@ -272,25 +231,23 @@ class PersonalScheduleNotifier:
                         logger.info("✅ Файл SS.txt загружен успешно")
                         return content
                     else:
-                        logger.error(f"❌ Ошибка загрузки файла: статус {response.status}")
+                        logger.error(f"❌ Ошибка загрузки: статус {response.status}")
                         return None
         except Exception as e:
-            logger.error(f"❌ Ошибка при загрузке SS.txt: {e}")
+            logger.error(f"❌ Ошибка загрузки SS.txt: {e}")
             return None
 
     async def send_telegram_message(self, message: str, ss_content: str = None):
-        """Отправляет сообщение в Telegram с содержимым SS.txt"""
         try:
             url = f"https://api.telegram.org/bot{self.telegram_token}/sendMessage"
             
-            # Отправляем основное сообщение
             payload = {
                 'chat_id': self.chat_id,
                 'text': message,
                 'parse_mode': 'HTML'
             }
             
-            logger.info("📤 Отправка основного сообщения в Telegram...")
+            logger.info("📤 Отправка сообщения в Telegram...")
             
             async with aiohttp.ClientSession() as session:
                 async with session.post(url, json=payload, timeout=10) as response:
@@ -299,22 +256,62 @@ class PersonalScheduleNotifier:
                         logger.error(f"❌ Ошибка Telegram API: {response_text}")
                         return False
             
-            # Если есть содержимое SS.txt, отправляем его отдельным сообщением
             if ss_content:
-                family_council_msg = f"<b>📋 Семейный совет:</b>\n\n<pre>{ss_content}</pre>"
-                
+                family_msg = f"<b>📋 Семейный совет:</b>\n\n<pre>{ss_content}</pre>"
                 payload_council = {
                     'chat_id': self.chat_id,
-                    'text': family_council_msg,
+                    'text': family_msg,
                     'parse_mode': 'HTML'
                 }
-                
-                logger.info("📤 Отправка сообщения со Семейным советом...")
-                
+                logger.info("📤 Отправка Семейного совета...")
                 async with aiohttp.ClientSession() as session:
                     async with session.post(url, json=payload_council, timeout=10) as response:
                         if response.status == 200:
-                            logger.info("✅ Сообщение успешно отправлено в Telegram!")
+                            logger.info("✅ Оба сообщения отправлены!")
                             return True
                         else:
-                            response_text
+                            logger.error(f"❌ Ошибка отправки совета")
+                            return False
+            else:
+                logger.info("✅ Сообщение отправлено!")
+                return True
+                
+        except Exception as e:
+            logger.error(f"❌ Ошибка: {e}")
+            return False
+
+    async def send_message_for_period(self, period: str):
+        date_str, day_of_week, schedule = self.get_today_schedule()
+        ss_content = None
+        
+        if period == 'morning':
+            message = self.format_morning_day_message(date_str, day_of_week, schedule)
+            if day_of_week == 'sunday':
+                ss_content = await self.fetch_family_council_content()
+        elif period == 'day':
+            message = self.format_morning_day_message(date_str, day_of_week, schedule)
+        elif period == 'evening':
+            message = self.format_evening_message(date_str, day_of_week, schedule)
+        else:
+            logger.error(f"❌ Неизвестный период: {period}")
+            return False
+            
+        return await self.send_telegram_message(message, ss_content)
+
+async def main(period: str):
+    logger.info(f"🚀 Запуск для периода: {period}")
+    notifier = PersonalScheduleNotifier()
+    success = await notifier.send_message_for_period(period)
+    
+    if success:
+        logger.info("🎉 Успешно завершено!")
+    else:
+        logger.error("💥 Ошибка при отправке")
+        sys.exit(1)
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2 or sys.argv[1] not in ('morning', 'day', 'evening'):
+        print("❌ Использование: python notifier.py <morning|day|evening>")
+        sys.exit(1)
+    
+    asyncio.run(main(sys.argv[1]))
