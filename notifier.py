@@ -193,7 +193,7 @@ class PersonalScheduleNotifier:
         content += f"💪 <b>Ты можешь всё! Давай!</b>\n\n"
         content += f"💡 <i>Мудрость дня:</i>\n<b>\"{wisdom}\"</b>"
         
-        return f"||{content}||"
+        return content
 
     def format_evening_message(self, date_str: str, day_of_week: str, schedule: dict):
         day_names = {
@@ -219,7 +219,7 @@ class PersonalScheduleNotifier:
         content += f"🌜 <b>Отличный день! Завершай дела и отдыхай!</b>\n\n"
         content += f"💡 <i>Мудрость дня:</i>\n<b>\"{wisdom}\"</b>"
         
-        return f"||{content}||"
+        return content
 
     async def fetch_family_council_content(self):
         try:
@@ -244,7 +244,7 @@ class PersonalScheduleNotifier:
             payload = {
                 'chat_id': self.chat_id,
                 'text': message,
-                'parse_mode': 'HTML'
+                'parse_mode': 'MarkdownV2'
             }
             
             logger.info("📤 Отправка сообщения в Telegram...")
