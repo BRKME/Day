@@ -301,4 +301,20 @@ class PersonalScheduleNotifier:
             
             # Если есть содержимое SS.txt, отправляем его отдельным сообщением
             if ss_content:
-                family_council_msg = f"<b>📋 Семейный совет:</b>\n\n<pre
+                family_council_msg = f"<b>📋 Семейный совет:</b>\n\n<pre>{ss_content}</pre>"
+                
+                payload_council = {
+                    'chat_id': self.chat_id,
+                    'text': family_council_msg,
+                    'parse_mode': 'HTML'
+                }
+                
+                logger.info("📤 Отправка сообщения со Семейным советом...")
+                
+                async with aiohttp.ClientSession() as session:
+                    async with session.post(url, json=payload_council, timeout=10) as response:
+                        if response.status == 200:
+                            logger.info("✅ Сообщение успешно отправлено в Telegram!")
+                            return True
+                        else:
+                            response_text
