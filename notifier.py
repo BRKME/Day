@@ -1,127 +1,4 @@
-def get_first_day_of_month(self, year, month, day_of_week):
-        """Получает первый день недели в месяце"""
-        from calendar import monthcalendar
-        cal = monthcalendar(year, month)
-        for week in cal:
-            if week[day_of_week] != 0:
-                return week[day_of_week]
-        return None
-
-    def get_nth_day_of_month(self, year, month, day_of_week, n):
-        """Получает n-й день недели в месяце (n=1 первый, n=3 третий и т.д.)"""
-        from calendar import monthcalendar
-        cal = monthcalendar(year, month)
-        count = 0
-        for week in cal:
-            if week[day_of_week] != 0:
-                count += 1
-                if count == n:
-                    return week[day_of_week]
-        return None
-
-    def get_event_date_by_rule(self, rule, year, month):
-        """Возвращает дату события по правилу"""
-        if rule == 'last_saturday':
-            day = self.get_last_day_of_month(year, month, 5)
-            return (year, month, day)
-        elif rule == 'last_sunday':
-            day = self.get_last_day_of_month(year, month, 6)
-            return (year, month, day)
-        elif rule == 'first_friday':
-            day = self.get_first_day_of_month(year, month, 4)
-            return (year, month, day)
-        elif rule == 'second_saturday':
-            day = self.get_nth_day_of_month(year, month, 5, 2)
-            return (year, month, day)
-        elif rule == 'third_saturday':
-            day = self.get_nth_day_of_month(year, month, 5, 3)
-            return (year, month, day)
-        return None    def get_random_wisdom(self):
-        return random.choice(self.wisdoms)
-
-    def get_last_day_of_month(self, year, month, day_of_week):
-        """Получает последний день недели в месяце (0=пн, 5=сб, 6=вс)"""
-        from calendar import monthcalendar
-        cal = monthcalendar(year, month)
-        for week in reversed(cal):
-            if week[day_of_week] != 0:
-                return week[day_of_week]
-        return None
-
-    def get_first_day_of_month(self, year, month, day_of_week):
-        """Получает первый день недели в месяце"""
-        from calendar import monthcalendar
-        cal = monthcalendar(year, month)
-        for week in cal:
-            if week[day_of_week] != 0:
-                return week[day_of_week]
-        return None
-        """Возвращает дату события по правилу"""
-        if rule == 'last_saturday':
-            day = self.get_last_day_of_month(year, month, 5)
-            return (year, month, day)
-        elif rule == 'last_sunday':
-            day = self.get_last_day_of_month(year, month, 6)
-            return (year, month, day)
-        elif rule == 'first_friday':
-            day = self.get_first_day_of_month(year, month, 4)
-            return (year, month, day)
-        elif rule == 'third_saturday':
-            day = self.get_nth_day_of_month(year, month, 5, 3)
-            return (year, month, day)
-        return None
-
-    def check_recurring_events(self):
-        """Проверяет, нужно ли показать напоминание о событии"""
-        from datetime import timedelta, date as dt
-        today = datetime.now()
-        year, month, day = today.year, today.month, today.day
-        
-        reminders = []
-        
-        for event_key, event in self.recurring_events.items():
-            event_date = self.get_event_date_by_rule(event['rule'], year, month)
-            if not event_date:
-                continue
-            
-            event_year, event_month, event_day = event_date
-            event_dt = dt(event_year, event_month, event_day)
-            today_dt = dt(year, month, day)
-            days_until = (event_dt - today_dt).days
-            
-            # Напоминание за 7 дней
-            if days_until == 7:
-                reminders.append({
-                    'key': event_key,
-                    'event': event,
-                    'date': event_dt,
-                    'days_until': days_until,
-                    'type': 'week_before'
-                })
-            
-            # Напоминание за 3 дня
-            elif days_until == 3:
-                reminders.append({
-                    'key': event_key,
-                    'event': event,
-                    'date': event_dt,
-                    'days_until': days_until,
-                    'type': 'three_days_before'
-                })
-            
-            # Если сегодня день события
-            elif days_until == 0:
-                reminders.append({
-                    'key': event_key,
-                    'event': event,
-                    'date': event_dt,
-                    'days_until': 0,
-                    'type': 'event_day'
-                })
-        
-        return reminders
-
-    def get_today_schedule(self):#!/usr/bin/env python3
+#!/usr/bin/env python3
 """
 Personal Daily Schedule Notifier - Updated with Spoilers and Family Tasks
 """
@@ -129,6 +6,7 @@ Personal Daily Schedule Notifier - Updated with Spoilers and Family Tasks
 import asyncio
 import aiohttp
 from datetime import datetime
+from calendar import monthcalendar
 import logging
 import random
 import sys
@@ -145,28 +23,6 @@ class PersonalScheduleNotifier:
             'morning': '07:30',
             'day': '12:30', 
             'evening': '19:00'
-        }
-
-        # Повторяющиеся события с гибкой датировкой
-        self.recurring_events = {
-            'tarelka': {
-                'name': 'Семейная традиция - Путещевствие на тарелке',
-                'file': 'tarelka.txt',
-                'rule': 'last_saturday',
-                'reminder_days': 7
-            },
-            'chronos': {
-                'name': 'Семейная традиция - Вечер воспоминаний. Хранители времени',
-                'file': 'chronos.txt',
-                'rule': 'third_saturday',
-                'reminder_days': 7
-            },
-            'new': {
-                'name': 'Семейная традиция - День нового',
-                'file': 'new.txt',
-                'rule': 'second_saturday',
-                'reminder_days': 7
-            }
         }
 
         self.wisdoms = [
@@ -242,6 +98,27 @@ class PersonalScheduleNotifier:
             "Любовь, время и благодарность — вот что имеет значение в конце."
         ]
 
+        self.recurring_events = {
+            'tarelka': {
+                'name': 'Семейная традиция - Путещевствие на тарелке',
+                'file': 'tarelka.txt',
+                'rule': 'last_saturday',
+                'reminder_days': 7
+            },
+            'chronos': {
+                'name': 'Семейная традиция - Вечер воспоминаний. Хранители времени',
+                'file': 'chronos.txt',
+                'rule': 'third_saturday',
+                'reminder_days': 7
+            },
+            'new': {
+                'name': 'Семейная традиция - День нового',
+                'file': 'new.txt',
+                'rule': 'second_saturday',
+                'reminder_days': 7
+            }
+        }
+
         self.schedule = {
             'monday': {
                 'утро': ['⚖️ Взвеситься на весах', '💪 Сделать Зарядку', '💊 Прими Витамины', '💝 Комплимент Марте и Саше', '📺 Посмотреть Амо блог на youtube', '🎓 English на Youtube 20 min', '🚀 Ничего не бойся и не сдавайся! - Девиз этого утра', '🧠 Афформация 5 минут'],
@@ -286,6 +163,51 @@ class PersonalScheduleNotifier:
                 'вечер': ['🍽️ Родители моют посуду', '💊 Прими Магний перед сном', '👨‍👩‍👧 Семейная традиция - вечерняя благодарность (развитие эмпатии. учимся замечать не только свои собственные усилия, но и то, что для них делают другие)']
             }
         }
+
+    def get_random_wisdom(self):
+        return random.choice(self.wisdoms)
+
+    def get_last_day_of_month(self, year, month, day_of_week):
+        cal = monthcalendar(year, month)
+        for week in reversed(cal):
+            if week[day_of_week] != 0:
+                return week[day_of_week]
+        return None
+
+    def get_first_day_of_month(self, year, month, day_of_week):
+        cal = monthcalendar(year, month)
+        for week in cal:
+            if week[day_of_week] != 0:
+                return week[day_of_week]
+        return None
+
+    def get_nth_day_of_month(self, year, month, day_of_week, n):
+        cal = monthcalendar(year, month)
+        count = 0
+        for week in cal:
+            if week[day_of_week] != 0:
+                count += 1
+                if count == n:
+                    return week[day_of_week]
+        return None
+
+    def get_event_date_by_rule(self, rule, year, month):
+        if rule == 'last_saturday':
+            day = self.get_last_day_of_month(year, month, 5)
+            return (year, month, day)
+        elif rule == 'last_sunday':
+            day = self.get_last_day_of_month(year, month, 6)
+            return (year, month, day)
+        elif rule == 'first_friday':
+            day = self.get_first_day_of_month(year, month, 4)
+            return (year, month, day)
+        elif rule == 'second_saturday':
+            day = self.get_nth_day_of_month(year, month, 5, 2)
+            return (year, month, day)
+        elif rule == 'third_saturday':
+            day = self.get_nth_day_of_month(year, month, 5, 3)
+            return (year, month, day)
+        return None
 
     def get_today_schedule(self):
         try:
@@ -363,22 +285,7 @@ class PersonalScheduleNotifier:
         
         return content
 
-    async def fetch_event_file(self, filename: str):
-        """Загружает содержимое файла события с GitHub"""
-        try:
-            url = f"https://raw.githubusercontent.com/BRKME/Day/main/{filename}"
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url, timeout=10) as response:
-                    if response.status == 200:
-                        content = await response.text()
-                        logger.info(f"✅ Файл {filename} загружен успешно")
-                        return content
-                    else:
-                        logger.error(f"❌ Ошибка загрузки {filename}: статус {response.status}")
-                        return None
-        except Exception as e:
-            logger.error(f"❌ Ошибка при загрузке {filename}: {e}")
-            return None
+    async def fetch_family_council_content(self):
         try:
             url = "https://raw.githubusercontent.com/BRKME/Day/main/SS.txt"
             async with aiohttp.ClientSession() as session:
@@ -393,6 +300,68 @@ class PersonalScheduleNotifier:
         except Exception as e:
             logger.error(f"❌ Ошибка загрузки SS.txt: {e}")
             return None
+
+    async def fetch_event_file(self, filename: str):
+        try:
+            url = f"https://raw.githubusercontent.com/BRKME/Day/main/{filename}"
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, timeout=10) as response:
+                    if response.status == 200:
+                        content = await response.text()
+                        logger.info(f"✅ Файл {filename} загружен успешно")
+                        return content
+                    else:
+                        logger.error(f"❌ Ошибка загрузки {filename}: статус {response.status}")
+                        return None
+        except Exception as e:
+            logger.error(f"❌ Ошибка при загрузке {filename}: {e}")
+            return None
+
+    def check_recurring_events(self):
+        from datetime import date as dt
+        today = datetime.now()
+        year, month, day = today.year, today.month, today.day
+        
+        reminders = []
+        
+        for event_key, event in self.recurring_events.items():
+            event_date = self.get_event_date_by_rule(event['rule'], year, month)
+            if not event_date:
+                continue
+            
+            event_year, event_month, event_day = event_date
+            event_dt = dt(event_year, event_month, event_day)
+            today_dt = dt(year, month, day)
+            days_until = (event_dt - today_dt).days
+            
+            if days_until == 7:
+                reminders.append({
+                    'key': event_key,
+                    'event': event,
+                    'date': event_dt,
+                    'days_until': days_until,
+                    'type': 'week_before'
+                })
+            
+            elif days_until == 3:
+                reminders.append({
+                    'key': event_key,
+                    'event': event,
+                    'date': event_dt,
+                    'days_until': days_until,
+                    'type': 'three_days_before'
+                })
+            
+            elif days_until == 0:
+                reminders.append({
+                    'key': event_key,
+                    'event': event,
+                    'date': event_dt,
+                    'days_until': 0,
+                    'type': 'event_day'
+                })
+        
+        return reminders
 
     async def send_telegram_message(self, message: str, ss_content: str = None):
         try:
@@ -446,7 +415,6 @@ class PersonalScheduleNotifier:
             if day_of_week == 'sunday':
                 ss_content = await self.fetch_family_council_content()
             
-            # Проверяем напоминания о событиях
             reminders = self.check_recurring_events()
             if reminders:
                 for reminder in reminders:
