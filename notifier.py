@@ -364,7 +364,7 @@ if __name__ == "__main__":
     if len(sys.argv) != 2 or sys.argv[1] not in ('morning', 'day', 'evening'):
         print("❌ Использование: python notifier.py <morning|day|evening>")
         sys.exit(1)
-    asyncio.run(main(sys.argv[1])) content
+    asyncio.run(main(sys.argv[1]))
                     else:
                         logger.error(f"❌ Ошибка загрузки: статус {response.status}")
                         return None
