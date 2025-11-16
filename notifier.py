@@ -244,7 +244,7 @@ class PersonalScheduleNotifier:
             payload = {
                 'chat_id': self.chat_id,
                 'text': message,
-                'parse_mode': 'MarkdownV2'
+                'parse_mode': 'HTML'
             }
             
             logger.info("📤 Отправка сообщения в Telegram...")
