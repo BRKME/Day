@@ -26,7 +26,7 @@ class PersonalScheduleNotifier:
     "«Я твердо верю в удачу, и чем больше я работаю — тем я удачливее.» — Томас Джефферсон",  # Jefferson :contentReference[oaicite:7]{index=7}  
     "«Окружай себя теми, кто делает тебя лучше.» — Сенека",  # Stoic wisdom :contentReference[oaicite:8]{index=8}  
     "«Неудача — это просто возможность начать снова, но уже более мудро.» — Генри Форд",  # common quote, but ensure source – I'll treat as from motivational sources :contentReference[oaicite:9]{index=9}  
-    "«Я благодарен всем, кто сказал мне „нет". Благодаря им я делаю всё сам.» — Альберт Эйнштейн",  # Einstein :contentReference[oaicite:10]{index=10}  
+    "«Я благодарен всем, кто сказал мне 'нет'. Благодаря им я делаю всё сам.» — Альберт Эйнштейн",  
     "«Поражение — это лишь плата за обучение успеху.» — Уолтер Брюнел",  # businessgood.ru :contentReference[oaicite:11]{index=11}  
     "«Когда что-то не в твоей власти — не волнуйся об этом.» — Эпиктет",  # stoicism idea from Enchiridion :contentReference[oaicite:12]{index=12}  
     "«Каждый день даёт шанс стать лучше.» — Конфуций",  # from general collections :contentReference[oaicite:13]{index=13}  
@@ -425,7 +425,14 @@ class PersonalScheduleNotifier:
     async def send_telegram_message(self, message, ss_content=None):
         try:
             url = f"https://api.telegram.org/bot{self.telegram_token}/sendMessage"
-            payload = {'chat_id': self.chat_id, 'text': message, 'parse_mode': 'HTML'}
+            
+            # Базовый payload
+            payload = {
+                'chat_id': self.chat_id, 
+                'text': message, 
+                'parse_mode': 'HTML'
+            }
+            
             logger.info("📤 Отправка сообщения в Telegram...")
             async with aiohttp.ClientSession() as session:
                 async with session.post(url, json=payload, timeout=10) as response:
@@ -453,8 +460,10 @@ class PersonalScheduleNotifier:
     async def send_message_for_period(self, period):
         date_str, day_of_week, schedule = self.get_today_schedule()
         ss_content = None
+        
         if period == 'morning':
             message = await self.format_morning_day_message(date_str, day_of_week, schedule)
+            
             if day_of_week == 'sunday':
                 ss_content = await self.fetch_family_council_content()
             reminders = self.check_recurring_events()
