@@ -6,6 +6,7 @@ Telegram бот для отслеживания выполнения задач
 
 import asyncio
 import aiohttp
+from aiohttp import web
 import json
 import logging
 from datetime import datetime, timedelta
@@ -363,10 +364,26 @@ class TaskTrackerBot:
             logger.error(f"❌ Ошибка получения обновлений: {e}")
             return []
     
+    async def health_check(self, request):
+        """HTTP endpoint для Render health check"""
+        return web.Response(text="OK", status=200)
+    
     async def run(self):
         """Основной цикл бота"""
         logger.info("🤖 Tracker Bot запущен!")
         logger.info("📊 Слушаю обновления...")
+        
+        # Запускаем HTTP сервер для Render
+        app = web.Application()
+        app.router.add_get('/', self.health_check)
+        app.router.add_get('/health', self.health_check)
+        
+        port = int(os.environ.get('PORT', 10000))
+        runner = web.AppRunner(app)
+        await runner.setup()
+        site = web.TCPSite(runner, '0.0.0.0', port)
+        await site.start()
+        logger.info(f"🌐 HTTP сервер запущен на порту {port}")
         
         last_schedule_check = datetime.now()
         
