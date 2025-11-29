@@ -353,6 +353,14 @@ class PersonalScheduleNotifier:
         content += f"\n\n🙏 <a href='{self.prayer_url}'>Утренняя молитва</a>"
         
         return content
+    
+    def create_progress_button(self):
+        """Создаёт inline кнопку для обновления прогресса"""
+        return {
+            'inline_keyboard': [
+                [{'text': '🔄 Обновить прогресс', 'callback_data': 'update_progress'}]
+            ]
+        }
 
     async def format_evening_message(self, date_str, day_of_week, schedule):
         day_names = {'monday': 'Понедельник', 'tuesday': 'Вторник', 'wednesday': 'Среда', 'thursday': 'Четверг', 'friday': 'Пятница', 'saturday': 'Суббота', 'sunday': 'Воскресенье'}
@@ -426,7 +434,7 @@ class PersonalScheduleNotifier:
                 reminders.append({'key': event_key, 'event': event, 'type': 'event_day'})
         return reminders
 
-    async def send_telegram_message(self, message, ss_content=None):
+    async def send_telegram_message(self, message, ss_content=None, add_progress_button=False):
         try:
             url = f"https://api.telegram.org/bot{self.telegram_token}/sendMessage"
             payload = {
@@ -435,6 +443,10 @@ class PersonalScheduleNotifier:
                 'parse_mode': 'HTML',
                 'disable_web_page_preview': False  # Включаем preview для ссылки на молитву
             }
+            
+            # Добавляем кнопку прогресса, если нужно
+            if add_progress_button:
+                payload['reply_markup'] = self.create_progress_button()
             
             logger.info("📤 Отправка сообщения в Telegram...")
             async with aiohttp.ClientSession() as session:
@@ -463,9 +475,11 @@ class PersonalScheduleNotifier:
     async def send_message_for_period(self, period):
         date_str, day_of_week, schedule = self.get_today_schedule()
         ss_content = None
+        add_button = False
         
         if period == 'morning':
             message = await self.format_morning_day_message(date_str, day_of_week, schedule)
+            add_button = True  # Добавляем кнопку в утреннее сообщение
             
             if day_of_week == 'sunday':
                 ss_content = await self.fetch_family_council_content()
@@ -488,12 +502,14 @@ class PersonalScheduleNotifier:
                             message += f"{event_content}"
         elif period == 'day':
             message = await self.format_morning_day_message(date_str, day_of_week, schedule)
+            add_button = True  # Добавляем кнопку в дневное сообщение
         elif period == 'evening':
             message = await self.format_evening_message(date_str, day_of_week, schedule)
+            add_button = True  # Добавляем кнопку в вечернее сообщение
         else:
             logger.error(f"❌ Неизвестный период: {period}")
             return False
-        return await self.send_telegram_message(message, ss_content)
+        return await self.send_telegram_message(message, ss_content, add_progress_button=add_button)
 
 async def main(period):
     logger.info(f"🚀 Запуск для периода: {period}")
