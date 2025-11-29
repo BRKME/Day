@@ -1,0 +1,22 @@
+{
+  "_info": "Файл для хранения статистики выполнения задач",
+  "_format": {
+    "YYYY-MM-DD": {
+      "morning": {
+        "completed": [0, 1, 2],
+        "total": 8
+      },
+      "day": {
+        "completed": [0, 1],
+        "total": 7
+      },
+      "evening": {
+        "completed": [0, 1, 2, 3],
+        "total": 10
+      },
+      "percentage": 78,
+      "points": 14,
+      "max_points": 17
+    }
+  }
+}
